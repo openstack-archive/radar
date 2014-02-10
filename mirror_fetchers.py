@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import datetime
+import json
 import os
 import urllib
 
@@ -16,33 +17,52 @@ while day < datetime.datetime.now():
     for target in REMOTES:
         url = 'http://%s/output/%d/%d/%d' %(target, day.year, day.month,
                                             day.day)
-        path = os.path.join(target, str(day.year), str(day.month))
-        filename = os.path.join(path, str(day.day))
+        single_path = os.path.join(target, str(day.year), str(day.month))
+        single = os.path.join(single_path, str(day.day))
+        merged_path = os.path.join('merged', str(day.year), str(day.month))
+        merged = os.path.join(merged_path, str(day.day))
 
-        if not os.path.exists(path):
-            os.makedirs(path)
+        if not os.path.exists(single_path):
+            os.makedirs(single_path)
+        if not os.path.exists(merged_path):
+            os.makedirs(merged_path)
 
         print '%s Fetching %s' % (datetime.datetime.now(), url)
-        try:
-            remote = urllib.urlopen(url)
-            if remote.getcode() != 404:
-                remote_size = remote.info().getheaders('Content-Length')[0]
-                remote_size = int(remote_size)
+        remote = urllib.urlopen(url)
+        if remote.getcode() != 404:
+            remote_size = remote.info().getheaders('Content-Length')[0]
+            remote_size = int(remote_size)
 
-                if not os.path.exists(filename):
-                    local_size = 0
-                else:
-                    local_size = os.stat(filename).st_size
+            if not os.path.exists(single):
+                local_size = 0
+            else:
+                local_size = os.stat(single).st_size
 
-                print ('%s Local size %s, remote size %s'
-                       %(datetime.datetime.now(), local_size, remote_size))
-                if remote_size > local_size:
-                    with open(filename, 'w') as f:
-                        f.write(remote.read())
-                        print '%s ... fetched' % datetime.datetime.now()
-            remote.close()
+            print ('%s Local size %s, remote size %s'
+                   %(datetime.datetime.now(), local_size, remote_size))
+            if remote_size > local_size:
+                with open(single, 'w') as f:
+                    f.write(remote.read())
+                    print '%s ... fetched' % datetime.datetime.now()
 
-        except:
-            pass
+                single_data = []
+                merged_data = []
+                with open(single, 'r') as f:
+                    for line in f.readlines():
+                        single_data.append(json.loads(line))
+                if os.path.exists(merged):
+                    with open(merged, 'r') as f:
+                        for line in f.readlines():
+                            merged_data.append(json.loads(line))
+
+                for entry in single_data:
+                    if not entry in merged_data:
+                        merged_data.append(entry)
+
+                with open(merged, 'w') as f:
+                    f.write(json.dumps(merged_data))
+                print '%s ... merged' % datetime.datetime.now()
+
+        remote.close()
 
     day += one_day
