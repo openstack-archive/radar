@@ -12,6 +12,10 @@ REMOTES = ['gerrit-stream-logger-dfw.stillhq.com',
 one_day = datetime.timedelta(days=1)
 day = datetime.datetime(2013, 5, 1)
 
+merged_filename = None
+merged_data = {}
+merged_data_with_order = []
+
 while day < datetime.datetime.now():
     for target in REMOTES:
         url = 'http://%s/output/%d/%d/%d' %(target, day.year, day.month,
@@ -44,23 +48,28 @@ while day < datetime.datetime.now():
                     f.write(remote.read())
                     print '%s ... fetched' % datetime.datetime.now()
 
-                single_data = []
-                merged_data = {}
-                with open(single, 'r') as f:
-                    single_data = f.readlines()
-                if os.path.exists(merged):
-                    with open(merged, 'r') as f:
-                        for line in f.readlines():
-                            merged_data[line] = True
+                if merged_filename != merged:
+                    merged_data = {}
+                    merged_data_with_order = []
+                    print '%s ... loading merge file' % datetime.datetime.now()
+
+                    if os.path.exists(merged):
+                        with open(merged, 'r') as f:
+                            for line in f.readlines():
+                                merged_data[line] = True
+                                merged_data_with_order.append(line)
+                    merged_filename = merged
 
                 new_entries = 0
-                for entry in single_data:
-                    if not entry in merged_data:
-                        merged_data[entry] = True
-                        new_entries += 1
+                with open(single, 'r') as f:
+                    for entry in f.readlines():
+                        if not entry in merged_data:
+                            merged_data[entry] = True
+                            merged_data_with_order.append(entry)
+                            new_entries += 1
 
                 with open(merged, 'w') as f:
-                    f.write('\n'.join(merged_data.keys()))
+                    f.write('\n'.join(merged_data_with_order))
                 print ('%s ... merged (%d new entries)'
                        % (datetime.datetime.now(), new_entries))
 
