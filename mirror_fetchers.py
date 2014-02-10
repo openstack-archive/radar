@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 import datetime
-import json
 import os
 import urllib
 
@@ -49,11 +48,11 @@ while day < datetime.datetime.now():
                 merged_data = []
                 with open(single, 'r') as f:
                     for line in f.readlines():
-                        single_data.append(json.loads(line))
+                        single_data.append(line)
                 if os.path.exists(merged):
                     with open(merged, 'r') as f:
                         for line in f.readlines():
-                            merged_data.append(json.loads(line))
+                            merged_data.append(line)
 
                 new_entries = 0
                 for entry in single_data:
@@ -62,7 +61,7 @@ while day < datetime.datetime.now():
                         new_entries += 1
 
                 with open(merged, 'w') as f:
-                    f.write(json.dumps(merged_data))
+                    f.write('\n'.join(merged_data))
                 print ('%s ... merged (%d new entries)'
                        % (datetime.datetime.now(), new_entries))
 
