@@ -45,23 +45,22 @@ while day < datetime.datetime.now():
                     print '%s ... fetched' % datetime.datetime.now()
 
                 single_data = []
-                merged_data = []
+                merged_data = {}
                 with open(single, 'r') as f:
-                    for line in f.readlines():
-                        single_data.append(line)
+                    single_data = f.readlines()
                 if os.path.exists(merged):
                     with open(merged, 'r') as f:
                         for line in f.readlines():
-                            merged_data.append(line)
+                            merged_data[line] = True
 
                 new_entries = 0
                 for entry in single_data:
                     if not entry in merged_data:
-                        merged_data.append(entry)
+                        merged_data[entry] = True
                         new_entries += 1
 
                 with open(merged, 'w') as f:
-                    f.write('\n'.join(merged_data))
+                    f.write('\n'.join(merged_data.keys()))
                 print ('%s ... merged (%d new entries)'
                        % (datetime.datetime.now(), new_entries))
 
