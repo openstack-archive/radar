@@ -55,13 +55,16 @@ while day < datetime.datetime.now():
                         for line in f.readlines():
                             merged_data.append(json.loads(line))
 
+                new_entries = 0
                 for entry in single_data:
                     if not entry in merged_data:
                         merged_data.append(entry)
+                        new_entries += 1
 
                 with open(merged, 'w') as f:
                     f.write(json.dumps(merged_data))
-                print '%s ... merged' % datetime.datetime.now()
+                print ('%s ... merged (%d new entries)'
+                       % (datetime.datetime.now(), new_entries))
 
         remote.close()
 
