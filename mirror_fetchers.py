@@ -10,7 +10,8 @@ REMOTES = ['gerrit-stream-logger-dfw.stillhq.com',
            'gerrit-stream-logger-syd.stillhq.com']
 
 one_day = datetime.timedelta(days=1)
-day = datetime.datetime(2013, 5, 1)
+day = datetime.datetime.now()
+day -= datetime.timedelta(days=3)
 
 merged_filename = None
 merged_data = {}
@@ -56,6 +57,7 @@ while day < datetime.datetime.now():
                     if os.path.exists(merged):
                         with open(merged, 'r') as f:
                             for line in f.readlines():
+                                line = line.rstrip()
                                 merged_data[line] = True
                                 merged_data_with_order.append(line)
                     merged_filename = merged
@@ -63,6 +65,7 @@ while day < datetime.datetime.now():
                 new_entries = 0
                 with open(single, 'r') as f:
                     for entry in f.readlines():
+                        entry = entry.rstrip()
                         if not entry in merged_data:
                             merged_data[entry] = True
                             merged_data_with_order.append(entry)
