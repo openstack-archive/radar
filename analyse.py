@@ -11,7 +11,9 @@ CI_SYSTEM = ['Jenkins',
              'Hyper-V CI',
              'VMware Mine Sweeper',
              'Docker CI',
-             'NEC OpenStack CI']
+             'NEC OpenStack CI',
+             'XenServer CI',
+             'IBM PowerKVM Testing']
 
 
 def read_remote_lines(url):
@@ -55,15 +57,22 @@ if __name__ == '__main__':
                     continue
                 if j['change']['project'] != 'openstack/nova':
                     continue
+                if j['change']['branch'] != 'master':
+                    continue
 
                 if j['type'] == 'patchset-created':
                     number = j['change']['number']
                     patchset = j['patchSet']['number']
                     timestamp = j['patchSet']['createdOn']
-                    patchsets['%s,%s' % (number, patchset)] = \
-                        {'__created__': timestamp}
+                    patchsets.setdefault(number, {})
+                    patchsets[number][patchset] = {'__created__': timestamp}
 
                 elif j['type'] == 'comment-added':
+                    if j['comment'].startswith('Starting check jobs'):
+                        continue
+                    if j['comment'].startswith('Starting gate jobs'):
+                        continue
+
                     if not 'approvals' in j:
                         j['approvals'] = [{'type': 'CRVW', 'value': 0}]
 
@@ -75,20 +84,52 @@ if __name__ == '__main__':
 
                     number = j['change']['number']
                     patchset = j['patchSet']['number']
-                    timestamp = j['patchSet']['createdOn']
+                    patchsets.setdefault(number, {})
+                    patchsets[number].setdefault(patchset, {})
 
                     verified = []
+                    if author in patchsets[number].get(patchset, {}):
+                        verified = patchsets[number][patchset][author]
                     for approval in j['approvals']:
-                        verified.append('%s:%s' % (approval['type'],
-                                                   approval.get('value')))
-
-                    key = '%s,%s' % (number, patchset)
-                    patchsets.setdefault(key, {})
-                    patchsets[key][author] = (timestamp, verified)
+                        if approval.get('value') in ['1', '2']:
+                            sentiment = 'Positive'
+                        elif approval.get('value') in ['-1', '-2']:
+                            sentiment = 'Negative'
+                        elif (author == 'Hyper-V CI'
+                              and j['comment'].startswith('Build succeeded.')
+                              and j['comment'].find(
+                                  'Test run failed in') != -1):
+                            sentiment = 'Negative, buried in comment'
+                        elif (author == 'XenServer CI'
+                              and j['comment'].startswith('Passed using')):
+                            sentiment = 'Positive comment'
+                        elif (author == 'XenServer CI'
+                              and j['comment'].startswith('Failed using')):
+                            sentiment = 'Negative comment'
+                        elif j['comment'].startswith('Build succeeded.'):
+                            sentiment = 'Positive comment'
+                        elif j['comment'].startswith('Build successful.'):
+                            sentiment = 'Positive comment'
+                        elif j['comment'].startswith('Build failed.'):
+                            sentiment = 'Negative comment'
+                        else:
+                            sentiment = 'Unknown'
+                        
+                        verified.append(('%s:%s' % (approval['type'],
+                                                    approval.get('value')),
+                                         j['comment'].split('\n')[0],
+                                         sentiment))
+                    patchsets[number][patchset][author] = verified
 
                 elif j['type'] in ['change-abandoned',
-                                   'change-merged',
-                                   'change-restored',
+                                   'change-merged']:
+                    # These special cases might cause a CI system to stop
+                    # running its tests
+                    number = j['change']['number']
+                    patchsets.setdefault(number, {})
+                    patchsets[number]['__exemption__'] = j['type']
+
+                elif j['type'] in ['change-restored',
                                    'ref-updated']:
                     pass
 
