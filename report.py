@@ -6,16 +6,37 @@ import sys
 import time
 
 
-CI_SYSTEM = [
-    'Jenkins',
-    'Docker CI',
-    'Hyper-V CI',
-    'IBM PowerKVM Testing',
-    'NEC OpenStack CI',
-    'VMware Mine Sweeper',
-    'XenServer CI',
-    'turbo-hipster',
-    ]
+CI_SYSTEM = {
+    'nova': [
+        'Jenkins',
+        'Docker CI',
+        'Hyper-V CI',
+        'IBM PowerKVM Testing',
+        'VMware Mine Sweeper',
+        'XenServer CI',
+        'turbo-hipster',
+        ],
+    'neutron': [
+        'Jenkins',
+        'Arista Testing',
+        'Big Switch CI',
+        'Brocade Tempest',
+        'Cisco OpenStack CI Robot',
+        'Huawei CI',
+        'IBM Neutron Testing',
+        'Mellanox External Testing',
+        'Midokura CI Bot',
+        'NetScaler TestingSystem',
+        'Neutron Ryu',
+        'Nuage CI',
+        'OpenContrail',
+        'OpenDaylight Jenkins',
+        'PLUMgrid CI',
+        'Tail-f NCS Jenkins',
+        'VMware Mine Sweeper',
+        'nicirabot',
+        ]
+    }
 
 SENTIMENTS = [
     'Positive',
@@ -36,7 +57,7 @@ def patch_list_as_html(l):
     return ', '.join(out)
 
 
-if __name__ == '__main__':
+def report(project, prefix):
     with open('patchsets.json') as f:
         patchsets = json.loads(f.read())
 
@@ -53,6 +74,9 @@ if __name__ == '__main__':
 
     for number in patchsets:
         if patchsets[number].get('__exemption__'):
+            continue
+
+        if patchsets[number].get('__project__') != project:
             continue
         
         patches = sorted(patchsets[number].keys())
@@ -102,55 +126,62 @@ if __name__ == '__main__':
                     sentiments[author][sentiment].append(
                         '%s,%s' % (number, patch))
 
-            for author in CI_SYSTEM:
+            for author in CI_SYSTEM[prefix]:
                 if not author in patchsets[number][patch]:
                     missed_votes.setdefault(author, [])
                     missed_votes[author].append('%s,%s' % (number, patch))
 
-    print '<b>Valid patches in report period: %d</b><ul>' % total_patches
-    for author in CI_SYSTEM:
-        if not author in total_votes:
-            print ('<li><font color=blue>No votes recorded for '
-                   '<b>%s</b></font></li>'
-                   % author)
-            continue
+    with open('%s-cireport.html' % prefix, 'w') as f:
+        f.write('<b>Valid patches in report period: %d</b><ul>'
+                % total_patches)
+        for author in CI_SYSTEM[prefix]:
+            if not author in total_votes:
+                f.write('<li><font color=blue>No votes recorded for '
+                        '<b>%s</b></font></li>'
+                        % author)
+                continue
+            
+            percentage = (total_votes[author] * 100.0 / total_patches)
+            
+            if percentage < 95.0:
+                f.write('<font color=red>')
+                
+            passed = passed_votes.get(author, 0)
+            failed = failed_votes.get(author, 0)
+            unparsed = unparsed_votes.get(author, 0)
+            total = passed + failed + unparsed
+            pass_percentage = passed * 100.0 / total
+            fail_percentage = failed * 100.0 / total
+            unparsed_percentage = unparsed * 100.0 / total
+            f.write('<li><b>%s</b> voted on %d patchsets (%.02f%%), '
+                    'passing %d (%.02f%%), failing %s (%.02f%%) and '
+                    'unparsed %d (%.02f%%)'
+                    % (author, total_votes[author], percentage, passed,
+                       pass_percentage, failed, fail_percentage, unparsed,
+                        unparsed_percentage))
+                
+            if percentage < 95.0:
+                  f.write('</font>')
 
-        percentage = (total_votes[author] * 100.0 / total_patches)
+            f.write('</li><ul><li>Missed %d: %s</li>'
+                    '<li>Sentiment:</li><ul>'
+                    % (len(missed_votes.get(author, [])),
+                       patch_list_as_html(
+                           missed_votes.get(author, []))))
+            for sentiment in SENTIMENTS:
+                count = len(sentiments.get(author, {}).get(
+                    sentiment, []))
+                if count > 0:
+                    f.write('<li>%s: %d' % (sentiment, count ))
+                    if sentiment != 'Positive':
+                        f.write('(%s)</li>'
+                                % patch_list_as_html(
+                                    sentiments[author][sentiment]))
+                f.write('</li>')
+            f.write('</ul></ul>')
+        f.write('</ul>')
 
-        if percentage < 95.0:
-            print '<font color=red>'
 
-        passed = passed_votes.get(author, 0)
-        failed = failed_votes.get(author, 0)
-        unparsed = unparsed_votes.get(author, 0)
-        total = passed + failed + unparsed
-        pass_percentage = passed * 100.0 / total
-        fail_percentage = failed * 100.0 / total
-        unparsed_percentage = unparsed * 100.0 / total
-        print ('<li><b>%s</b> voted on %d patchsets (%.02f%%), '
-               'passing %d (%.02f%%), failing %s (%.02f%%) and '
-               'unparsed %d (%.02f%%)'
-               % (author, total_votes[author], percentage, passed,
-                  pass_percentage, failed, fail_percentage, unparsed,
-                  unparsed_percentage))
-                  
-        if percentage < 95.0:
-            print '</font>'
-
-        print '</li><ul>'
-        print ('<li>Missed %d: %s</li>'
-               % (len(missed_votes.get(author, [])),
-                  patch_list_as_html(missed_votes.get(author, []))))
-        print '<li>Sentiment:</li><ul>'
-        for sentiment in SENTIMENTS:
-            count = len(sentiments.get(author, {}).get(sentiment, []))
-            if count > 0:
-                print '<li>%s: %d' % (sentiment, count )
-                if sentiment != 'Positive':
-                    print ('(%s)'
-                           % patch_list_as_html(sentiments[author][sentiment]))
-            print '</li>'
-
-        print '</ul></ul>'
-
-    print '</ul>'
+if __name__ == '__main__':
+    report ('openstack/nova', 'nova')
+    report ('openstack/neutron', 'neutron')

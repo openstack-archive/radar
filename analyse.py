@@ -6,14 +6,53 @@ import sys
 import urllib
 
 
+# This list from https://review.openstack.org/#/admin/groups/270,members and
+# https://review.openstack.org/#/admin/groups/91,members
 CI_SYSTEM = ['Jenkins',
-             'turbo-hipster',
-             'Hyper-V CI',
-             'VMware Mine Sweeper',
+             'Arista Testing',
+             'Big Switch CI',
+             'Brocade Tempest',
+             'Cisco OpenStack CI Robot',
+             'CitrixJenkins',
+             'Compass CI',
+             'Designate Jenkins',
              'Docker CI',
+             'Freescale CI',
+             'Fuel CI',
+             'Huawei CI',
+             'Hyper-V CI',
+             'IBM DB2 Test',
+             'IBM Neutron Testing',
+             'IBM PowerKVM Testing',
+             'IBM PowerVC Test',
+             'Mellanox External Testing',
+             'Metaplugin CI Test',
+             'Midokura CI Bot',
              'NEC OpenStack CI',
+             'NetScaler TestingSystem',
+             'Neutron Ryu',
+             'Nuage CI',
+             'OpenContrail',
+             'OpenDaylight Jenkins',
+             'PLUMgrid CI',
+             'Puppet Ceph Integration',
+             'Puppet OpenStack CI',
+             'Radware 3rd Party Testing',
+             'Red Hat CI',
+             'SmokeStack',
+             'Tail-f NCS Jenkins',
+             'VMware Mine Sweeper',
+             'Wherenow.org Jenkins CI',
              'XenServer CI',
-             'IBM PowerKVM Testing']
+             'murano-ci',
+             'nicirabot',
+             'novaimagebuilder-jenkins',
+             'reddwarf',
+             'savanna-ci',
+             'turbo-hipster',
+             'vArmour CI Test',
+             'vanillabot',
+        ]
 
 
 def read_remote_lines(url):
@@ -55,8 +94,6 @@ if __name__ == '__main__':
             try:
                 if not 'change' in j:
                     continue
-                if j['change']['project'] != 'openstack/nova':
-                    continue
                 if j['change']['branch'] != 'master':
                     continue
 
@@ -65,7 +102,10 @@ if __name__ == '__main__':
                     patchset = j['patchSet']['number']
                     timestamp = j['patchSet']['createdOn']
                     patchsets.setdefault(number, {})
-                    patchsets[number][patchset] = {'__created__': timestamp}
+                    patchsets[number][patchset] = {
+                        '__created__': timestamp
+                        }
+                    patchsets[number]['__project__'] = j['change']['project']
 
                 elif j['type'] == 'comment-added':
                     if j['comment'].startswith('Starting check jobs'):
