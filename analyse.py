@@ -131,10 +131,13 @@ if __name__ == '__main__':
                     if author in patchsets[number].get(patchset, {}):
                         verified = patchsets[number][patchset][author]
                     for approval in j['approvals']:
+                        # People who are sane
                         if approval.get('value') in ['1', '2']:
                             sentiment = 'Positive'
                         elif approval.get('value') in ['-1', '-2']:
                             sentiment = 'Negative'
+
+                        # Horrible special cases
                         elif (author == 'Hyper-V CI'
                               and j['comment'].startswith('Build succeeded.')
                               and j['comment'].find(
@@ -146,6 +149,16 @@ if __name__ == '__main__':
                         elif (author == 'XenServer CI'
                               and j['comment'].startswith('Failed using')):
                             sentiment = 'Negative comment'
+                        elif (author == 'Arista Testing'
+                              and j['comment'].find('Arista third party '
+                                                    'testing FAILED') != -1):
+                            sentiment = 'Negative, buried in a comment'
+                        elif (author == 'Big Switch CI'
+                              and j['comment'].startswith('Doesn\'t seem to '
+                                                          'work')):
+                            sentiment = 'Negative, buried in a comment'
+
+                        # Normal people special cases
                         elif j['comment'].startswith('Build succeeded.'):
                             sentiment = 'Positive comment'
                         elif j['comment'].startswith('Build successful.'):
