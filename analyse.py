@@ -152,11 +152,11 @@ if __name__ == '__main__':
                         elif (author == 'Arista Testing'
                               and j['comment'].find('Arista third party '
                                                     'testing FAILED') != -1):
-                            sentiment = 'Negative, buried in a comment'
+                            sentiment = 'Negative, buried in comment'
                         elif (author == 'Big Switch CI'
                               and j['comment'].startswith('Doesn\'t seem to '
                                                           'work')):
-                            sentiment = 'Negative, buried in a comment'
+                            sentiment = 'Negative, buried in comment'
 
                         # Normal people special cases
                         elif j['comment'].startswith('Build succeeded.'):
