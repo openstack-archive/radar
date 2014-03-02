@@ -26,6 +26,7 @@ CI_SYSTEM = {
         'IBM Neutron Testing',
         'Mellanox External Testing',
         'Midokura CI Bot',
+        'NEC OpenStack CI',
         'NetScaler TestingSystem',
         'Neutron Ryu',
         'Nuage CI',
