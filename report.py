@@ -23,6 +23,7 @@ CI_SYSTEM = {
         'Brocade Tempest',
         'Cisco OpenStack CI Robot',
         'Huawei CI',
+        'Hyper-V CI',
         'IBM Neutron Testing',
         'Mellanox External Testing',
         'Midokura CI Bot',
@@ -180,7 +181,7 @@ def report(project, prefix):
                                     sentiments[author][sentiment]))
                 f.write('</li>')
             f.write('</ul></ul>')
-        f.write('</ul>')
+        f.write('</ul><p>What is this report? Why is it so wrong? This report is a quick hack done by Michael Still to visualize the performance of CI systems voting on OpenStack changes. For help, please email him at mikal@stillhq.com.</p>')
 
 
 if __name__ == '__main__':
