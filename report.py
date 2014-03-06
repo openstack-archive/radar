@@ -5,50 +5,7 @@ import json
 import sys
 import time
 
-
-CI_SYSTEM = {
-    'nova': [
-        'Jenkins',
-        'Docker CI',
-        'Hyper-V CI',
-        'IBM PowerKVM Testing',
-        'VMware Mine Sweeper',
-        'XenServer CI',
-        'turbo-hipster',
-        ],
-    'neutron': [
-        'Jenkins',
-        'Arista Testing',
-        'Big Switch CI',
-        'Brocade Tempest',
-        'Cisco OpenStack CI Robot',
-        'Huawei CI',
-        'Hyper-V CI',
-        'IBM Neutron Testing',
-        'Mellanox External Testing',
-        'Midokura CI Bot',
-        'NEC OpenStack CI',
-        'NetScaler TestingSystem',
-        'Neutron Ryu',
-        'Nuage CI',
-        'OpenContrail',
-        'OpenDaylight Jenkins',
-        'PLUMgrid CI',
-        'Tail-f NCS Jenkins',
-        'VMware Mine Sweeper',
-        'nicirabot',
-        ]
-    }
-
-SENTIMENTS = [
-    'Positive',
-    'Negative',
-    'Positive comment',
-    'Negative comment',
-    'Negative, buried in comment',
-    'Unknown'
-    ]
-
+import conf
 
 def patch_list_as_html(l):
     out = []
@@ -59,10 +16,17 @@ def patch_list_as_html(l):
     return ', '.join(out)
 
 
-def report(project, prefix):
+def report(project_filter, user_filter, prefix):
     with open('patchsets.json') as f:
         patchsets = json.loads(f.read())
 
+    if not user_filter:
+        user_filter = conf.CI_SYSTEM[prefix]
+    elif user_filter and not 'Jenkins' in user_filter:
+        user_filter_new = ['Jenkins']
+        user_filter_new.extend(user_filter)
+        user_filter = user_filter_new
+        
     # This is more complicated than it looks because we need to handle
     # patchsets which are uploaded so rapidly that older patchsets aren't
     # finished testing.
@@ -78,8 +42,9 @@ def report(project, prefix):
         if patchsets[number].get('__exemption__'):
             continue
 
-        if patchsets[number].get('__project__') != project:
-            continue
+        if project_filter != '*':
+            if patchsets[number].get('__project__') != project_filter:
+                continue
         
         patches = sorted(patchsets[number].keys())
         valid_patches = []
@@ -109,6 +74,9 @@ def report(project, prefix):
                 if author == '__created__':
                     continue
 
+                if author not in user_filter:
+                    continue
+
                 total_votes.setdefault(author, 0)
                 total_votes[author] += 1
 
@@ -128,7 +96,7 @@ def report(project, prefix):
                     sentiments[author][sentiment].append(
                         '%s,%s' % (number, patch))
 
-            for author in CI_SYSTEM[prefix]:
+            for author in user_filter:
                 if not author in patchsets[number][patch]:
                     missed_votes.setdefault(author, [])
                     missed_votes[author].append('%s,%s' % (number, patch))
@@ -136,7 +104,7 @@ def report(project, prefix):
     with open('%s-cireport.html' % prefix, 'w') as f:
         f.write('<b>Valid patches in report period: %d</b><ul>'
                 % total_patches)
-        for author in CI_SYSTEM[prefix]:
+        for author in user_filter:
             if not author in total_votes:
                 f.write('<li><font color=blue>No votes recorded for '
                         '<b>%s</b></font></li>'
@@ -170,7 +138,7 @@ def report(project, prefix):
                     % (len(missed_votes.get(author, [])),
                        patch_list_as_html(
                            missed_votes.get(author, []))))
-            for sentiment in SENTIMENTS:
+            for sentiment in conf.SENTIMENTS:
                 count = len(sentiments.get(author, {}).get(
                     sentiment, []))
                 if count > 0:
@@ -185,5 +153,8 @@ def report(project, prefix):
 
 
 if __name__ == '__main__':
-    report ('openstack/nova', 'nova')
-    report ('openstack/neutron', 'neutron')
+    report('openstack/nova', None, 'nova')
+    report('openstack/neutron', None, 'neutron')
+
+    for user in conf.CI_USERS:
+        report('*', [user], user.replace(' ', '_'))

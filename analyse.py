@@ -5,54 +5,7 @@ import json
 import sys
 import urllib
 
-
-# This list from https://review.openstack.org/#/admin/groups/270,members and
-# https://review.openstack.org/#/admin/groups/91,members
-CI_SYSTEM = ['Jenkins',
-             'Arista Testing',
-             'Big Switch CI',
-             'Brocade Tempest',
-             'Cisco OpenStack CI Robot',
-             'CitrixJenkins',
-             'Compass CI',
-             'Designate Jenkins',
-             'Docker CI',
-             'Freescale CI',
-             'Fuel CI',
-             'Huawei CI',
-             'Hyper-V CI',
-             'IBM DB2 Test',
-             'IBM Neutron Testing',
-             'IBM PowerKVM Testing',
-             'IBM PowerVC Test',
-             'Mellanox External Testing',
-             'Metaplugin CI Test',
-             'Midokura CI Bot',
-             'NEC OpenStack CI',
-             'NetScaler TestingSystem',
-             'Neutron Ryu',
-             'Nuage CI',
-             'OpenContrail',
-             'OpenDaylight Jenkins',
-             'PLUMgrid CI',
-             'Puppet Ceph Integration',
-             'Puppet OpenStack CI',
-             'Radware 3rd Party Testing',
-             'Red Hat CI',
-             'SmokeStack',
-             'Tail-f NCS Jenkins',
-             'VMware Mine Sweeper',
-             'Wherenow.org Jenkins CI',
-             'XenServer CI',
-             'murano-ci',
-             'nicirabot',
-             'novaimagebuilder-jenkins',
-             'reddwarf',
-             'savanna-ci',
-             'turbo-hipster',
-             'vArmour CI Test',
-             'vanillabot',
-        ]
+import conf
 
 
 def read_remote_lines(url):
@@ -117,7 +70,7 @@ if __name__ == '__main__':
                         j['approvals'] = [{'type': 'CRVW', 'value': 0}]
 
                     author = j['author']['name']
-                    if not author in CI_SYSTEM:
+                    if not author in conf.CI_USERS:
                         skipped_authors.setdefault(author, 0)
                         skipped_authors[author] += 1
                         continue
