@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import copy
 import datetime
 import json
 import sys
@@ -26,6 +27,9 @@ def report(project_filter, user_filter, prefix):
         user_filter_new = ['Jenkins']
         user_filter_new.extend(user_filter)
         user_filter = user_filter_new
+
+    user_filter_without_jenkins = copy.copy(user_filter)
+    user_filter_without_jenkins.remove('Jenkins')
         
     # This is more complicated than it looks because we need to handle
     # patchsets which are uploaded so rapidly that older patchsets aren't
@@ -63,6 +67,19 @@ def report(project_filter, user_filter, prefix):
             valid_for = obsoleted - uploaded
 
             if valid_for < datetime.timedelta(hours=3):
+                continue
+
+            matched_authors = 0
+            for author in patchsets[number][patch]:
+                if author == '__created__':
+                    continue
+
+                if author not in user_filter_without_jenkins:
+                    continue
+
+                matched_authors += 1
+
+            if matched_authors == 0:
                 continue
 
             valid_patches.append(patch)
