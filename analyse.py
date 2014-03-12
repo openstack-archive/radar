@@ -69,7 +69,12 @@ if __name__ == '__main__':
                     if not 'approvals' in j:
                         j['approvals'] = [{'type': 'CRVW', 'value': 0}]
 
-                    author = j['author']['name']
+                    author = j['author'].get('name', None)
+                    if not author:
+                        author = j['author'].get('username', None)
+                    if not author:
+                        author = j['author']['email']
+
                     if not author in conf.CI_USERS:
                         skipped_authors.setdefault(author, 0)
                         skipped_authors[author] += 1
