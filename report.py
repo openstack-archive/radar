@@ -166,7 +166,7 @@ def report(project_filter, user_filter, prefix):
                                     sentiments[author][sentiment]))
                 f.write('</li>')
             f.write('</ul></ul>')
-        f.write('</ul><p>What is this report? Why is it so wrong? This report is a quick hack done by Michael Still to visualize the performance of CI systems voting on OpenStack changes. For help, please email him at mikal@stillhq.com. This report was generated at %s.</p>' % datetimedatetime.now())
+        f.write('</ul><p>What is this report? Why is it so wrong? This report is a quick hack done by Michael Still to visualize the performance of CI systems voting on OpenStack changes. For help, please email him at mikal@stillhq.com. This report was generated at %s.</p>' % datetime.datetime.now())
 
 
 if __name__ == '__main__':
