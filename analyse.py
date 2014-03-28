@@ -6,26 +6,7 @@ import sys
 import urllib
 
 import conf
-
-
-def read_remote_lines(url):
-    remote = urllib.urlopen(url)
-    data = ''
-    while True:
-        d = remote.read(100)
-        if not d:
-            break
-
-        data += d
-
-        if data.find('\n') != -1:
-            elems = data.split('\n')
-            for line in elems[:-1]:
-                yield line
-            data = elems[-1]
-
-    if data:
-        yield data
+import utilities
 
 
 if __name__ == '__main__':
@@ -36,9 +17,9 @@ if __name__ == '__main__':
 
     while day < datetime.datetime.now():
         print 'Processing %s/%s/%s' % (day.year, day.month, day.day)
-        for line in read_remote_lines('http://www.rcbops.com/gerrit/merged/'
-                                      '%s/%s/%s'
-                                      % (day.year, day.month, day.day)):
+        for line in utilities.read_remote_lines(
+              'http://www.rcbops.com/gerrit/merged/%s/%s/%s'
+              % (day.year, day.month, day.day)):
             try:
                 j = json.loads(line)
             except:
