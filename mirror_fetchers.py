@@ -3,6 +3,7 @@
 import datetime
 import json
 import os
+import sys
 import urllib
 
 
@@ -108,7 +109,9 @@ for filename in changed_merge_files:
                 if j['type'] == 'comment-added':
                     author = j['author'].get('username', None)
                     if not author:
-                        author = j['author']['email']
+                        author = j['author'].get('email', None)
+                    if not author:
+                        continue
 
                     number = j['change']['number']
                     patchset = j['patchSet']['number']
