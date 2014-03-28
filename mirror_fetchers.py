@@ -85,11 +85,11 @@ while day < datetime.datetime.now():
 
     day += one_day
 
-for dirpath, subdirs, files in os.walk('merged'):
-    for filename in files:
-        if filename.endswith('.json'):
-            continue
-        changed_merge_files[os.path.join(dirpath, filename)] = True
+#for dirpath, subdirs, files in os.walk('merged'):
+#    for filename in files:
+#        if filename.endswith('.json'):
+#            continue
+#        changed_merge_files[os.path.join(dirpath, filename)] = True
 
 print 'Processing changed merge files'
 for filename in changed_merge_files:
