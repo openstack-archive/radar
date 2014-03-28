@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import datetime
+import json
 import os
 import urllib
 
@@ -16,6 +17,8 @@ day -= datetime.timedelta(days=3)
 merged_filename = None
 merged_data = {}
 merged_data_with_order = []
+
+changed_merge_files = {}
 
 while day < datetime.datetime.now():
     for target in REMOTES:
@@ -73,9 +76,56 @@ while day < datetime.datetime.now():
 
                 with open(merged, 'w') as f:
                     f.write('\n'.join(merged_data_with_order))
+                changed_merge_files[merged] = True
                 print ('%s ... merged (%d new entries)'
                        % (datetime.datetime.now(), new_entries))
 
         remote.close()
 
     day += one_day
+
+for dirpath, subdirs, files in os.walk('merged'):
+    for filename in files:
+        changed_merge_files[os.path.join(dirpath, filename)] = True
+
+print 'Processing changed merge files'
+for filename in changed_merge_files:
+    print '... %s' % filename
+    with open(filename, 'r') as f:
+        reviews = {}
+        for line in f.readlines():
+            line = line.rstrip()
+
+            try:
+                j = json.loads(line)
+            except:
+                continue
+
+            try:
+                if not 'change' in j:
+                    continue
+
+                if j['type'] == 'comment-added':
+                    author = j['author'].get('username', None)
+                    if not author:
+                        author = j['author']['email']
+
+                    number = j['change']['number']
+                    patchset = j['patchSet']['number']
+
+                    for approval in j.get('approvals', []):
+                        reviews.setdefault(author, [])
+                        reviews[author].append({'number': number,
+                                                'patchset': patchset,
+                                                'type': approval['type'],
+                                                'value': approval['value']})
+
+            except Exception, e:
+                print 'Error: %s\n' % e
+                print json.dumps(j, indent=4)
+                sys.exit(0)
+
+    with open('%s_reviews.json' % filename, 'w') as f:
+        f.write(json.dumps(reviews, indent=4))
+
+print 'Done'
