@@ -5,9 +5,39 @@ import datetime
 import json
 import sys
 import time
+from collections import namedtuple
+
 
 import conf
 
+
+def css():
+    with open('rcbau.css', 'w') as f:
+        f.write("""
+                body {
+                    font-size:75%;
+                    color:#222;
+                    background:#fff;
+                    font-family:"Helvetica Neue", Arial, Helvetica, sans-serif;
+                }
+
+                h3.failing { color: red; }
+                h3.nonvoting { color: blue; }
+
+                div.graph { float:left; width:25em; height:300px; }
+                div.small_graph { width:15em; height:150px;  }
+                div.patchsets_list { width:50em; float:left }
+                div.clear_float { clear:both }
+
+
+                a.ui-tabs-anchor div {
+                    color: blue;
+                    text-align: center;
+                    text-decoration: underline;
+                }
+                """)
+
+        
 def patch_list_as_html(l):
     out = []
     for p in sorted(l):
@@ -17,8 +47,135 @@ def patch_list_as_html(l):
     return ', '.join(out)
 
 
-def report(project_filter, user_filter, prefix):
-    with open('patchsets.json') as f:
+def pie_chart(author):
+    name = author.name.replace(' ', '-')
+    passed = author.passed
+    failed = author.failed
+    missed = len(author.missed_votes)
+    
+    return """
+                $('#{name}-graph').highcharts({{
+                    chart: {{
+                        plotBackgroundColor: null,
+                        plotBorderWidth: 0,
+                        plotShadow: false
+                    }},
+                    colors: [ 'green', 'red', 'yellow' ],
+                    title: {{
+                        text: 'Results',
+                        align: 'center',
+                        verticalAlign: 'middle',
+                        y: 50
+                    }},
+                    tooltip: {{
+                        pointFormat: 
+                        '{{series.name}}: <b>{{point.percentage:.1f}}%</b>'
+                    }},
+                    plotOptions: {{
+                        pie: {{
+                            dataLabels: {{
+                                enabled: true,
+                                distance: -50,
+                                style: {{
+                                    fontWeight: 'bold',
+                                    color: 'white',
+                                    textShadow: '0px 1px 2px black'
+                                }}
+                            }},
+                            startAngle: -90,
+                            endAngle: 90,
+                            center: ['50%', '75%']
+                        }}
+                    }},
+                    series: [{{
+                        type: 'pie',
+                        name: 'Results',
+                        innerSize: '50%',
+                        data: [
+                            ['Passed', {passed}],
+                            ['Failed', {failed}],
+                            ['Missed', {missed}]
+                        ]
+                    }}]
+                }});
+    """.format(name=name, passed=passed, failed=failed, missed=missed)
+
+
+def small_pie_chart(author):
+    name = author.name.replace(' ', '-') + '-small'
+    
+    if author.total:
+        passed = author.passed
+        failed = author.failed
+        missed = len(author.missed_votes)
+    else:
+        passed = 0
+        failed = 0
+        missed = 1
+
+    graph = """
+                $('#{name}-graph').highcharts({{
+                    chart: {{
+                        plotBackgroundColor: null,
+                        plotBorderWidth: 0,
+                        plotShadow: false
+                    }},
+                    colors: [ 'green', 'red', 'yellow' ],
+                    title: {{
+                        text: '',
+                        align: 'center',
+                        verticalAlign: 'middle',
+                        y: 50
+                    }},
+                    tooltip: {{
+                        pointFormat: 
+                        '{{series.name}}: <b>{{point.percentage:.1f}}%</b>'
+                    }},
+                    plotOptions: {{
+                        pie: {{
+                            dataLabels: {{
+                                enabled: false
+                            }},
+                            startAngle: -90,
+                            endAngle: 90,
+                            center: ['50%', '75%']
+                        }}
+                    }},
+                    series: [{{
+                        type: 'pie',
+                        innerSize: '50%',
+                        data: [
+                            ['Passed', {passed}],
+                            ['Failed', {failed}],
+                            ['Missed', {missed}]
+                        ]
+                    }}]
+                }});
+                """
+    return graph.format(
+        author=author, 
+        name=name, 
+        passed=passed, 
+        failed=failed, 
+        missed=missed
+    )
+
+
+def templated_report(**kwargs):
+        import os
+
+        path = os.path.dirname(__file__)
+
+        from chameleon import PageTemplateLoader
+        templates = PageTemplateLoader(os.path.join(path, "templates"))
+
+        template = templates['report.pt']
+
+        return template(**kwargs)
+
+
+def report(project_filter, user_filter, prefix, fname):
+    with open(fname) as f:
         patchsets = json.loads(f.read())
 
     if not user_filter:
@@ -60,10 +217,18 @@ def report(project_filter, user_filter, prefix):
                 continue
 
             uploaded = datetime.datetime.fromtimestamp(
-                patchsets[number][patch]['__created__'])
+                patchsets[number][patch]['__created__']
+            )
+            
             obsoleted = datetime.datetime.fromtimestamp(
-                patchsets[number].get(str(int(patch) + 1), {}).get(
-                '__created__', time.time()))
+                patchsets[number].get(
+                    str(
+                        int(patch) + 1), {}
+                    ).get(
+                        '__created__', 
+                        time.time()
+                    )
+            )
             valid_for = obsoleted - uploaded
 
             if valid_for < datetime.timedelta(hours=3):
@@ -118,60 +283,115 @@ def report(project_filter, user_filter, prefix):
                     missed_votes.setdefault(author, [])
                     missed_votes[author].append('%s,%s' % (number, patch))
 
+    charts = []
+    small_charts = []
+    authors = []
+    Author = namedtuple(
+        'Author', 
+        [
+            'name',
+            'percentage',
+            'passed',
+            'failed',
+            'unparsed',
+            'total',
+            'pass_percentage',
+            'fail_percentage',
+            'unparsed_percentage',
+            'missed_votes',
+            'sentiments'
+        ]
+    )
+    
+    Patch = namedtuple(
+        'Patch',
+        'number patch'
+    )
+    
+    for user in user_filter:
+        passed = passed_votes.get(user, 0)
+        failed = failed_votes.get(user, 0)
+        unparsed = unparsed_votes.get(user, 0)
+        total = passed + failed + unparsed
+        user_sentiments = sentiments.get(user, {})
+        
+        for sentiment in user_sentiments:
+            patches = []
+            for patch in user_sentiments[sentiment]:
+                patch, number = patch.split(',')
+                patches.append(Patch(patch, number))
+                
+            user_sentiments[sentiment] = patches
+        
+        missed = []
+        for missed_vote in missed_votes.get(user, []):
+            patch, number = missed_vote.split(',')
+            missed.append(Patch(patch, number))
+                        
+        if user in total_votes:
+            authors.append(
+                Author(
+                    name=user,
+                    percentage=round(
+                        total_votes[user] * 100.0 / total_patches, 2
+                        ),
+                    passed=passed, 
+                    failed=failed,
+                    unparsed=unparsed,
+                    total=total,
+                    pass_percentage=round(passed * 100.0 / total, 2),
+                    fail_percentage=round(failed * 100.0 / total, 2),
+                    unparsed_percentage=round(unparsed * 100.0 / total, 2),
+                    missed_votes=missed,
+                    sentiments=user_sentiments
+                )
+            )
+            charts.append(pie_chart(authors[-1]))
+            small_charts.append(small_pie_chart(authors[-1]))
+        else:
+            authors.append(
+                Author(
+                    name=user,
+                    percentage=None,
+                    passed=None,
+                    failed=None,
+                    unparsed=None,
+                    total=None,
+                    pass_percentage=None,
+                    fail_percentage=None,
+                    unparsed_percentage=None,
+                    missed_votes=None,
+                    sentiments=None
+                )
+            )     
+            small_charts.append(small_pie_chart(authors[-1]))
+            
+    report = templated_report(
+        total_patches=total_patches,
+        authors=authors,
+        now=datetime.datetime.now(),
+        missed_votes=missed_votes,
+        sentiments=conf.SENTIMENTS,
+        total_votes=total_votes,
+        charts=charts,
+        small_charts=small_charts
+    )
+    
     with open('%s-cireport.html' % prefix, 'w') as f:
-        f.write('<b>Valid patches in the last seven days: %d</b><ul>'
-                % total_patches)
-        for author in user_filter:
-            if not author in total_votes:
-                f.write('<li><font color=blue>No votes recorded for '
-                        '<b>%s</b></font></li>'
-                        % author)
-                continue
-            
-            percentage = (total_votes[author] * 100.0 / total_patches)
-            
-            if percentage < 95.0:
-                f.write('<font color=red>')
-                
-            passed = passed_votes.get(author, 0)
-            failed = failed_votes.get(author, 0)
-            unparsed = unparsed_votes.get(author, 0)
-            total = passed + failed + unparsed
-            pass_percentage = passed * 100.0 / total
-            fail_percentage = failed * 100.0 / total
-            unparsed_percentage = unparsed * 100.0 / total
-            f.write('<li><b>%s</b> voted on %d patchsets (%.02f%%), '
-                    'passing %d (%.02f%%), failing %s (%.02f%%) and '
-                    'unparsed %d (%.02f%%)'
-                    % (author, total_votes[author], percentage, passed,
-                       pass_percentage, failed, fail_percentage, unparsed,
-                        unparsed_percentage))
-                
-            if percentage < 95.0:
-                  f.write('</font>')
-
-            f.write('</li><ul><li>Missed %d: %s</li>'
-                    '<li>Sentiment:</li><ul>'
-                    % (len(missed_votes.get(author, [])),
-                       patch_list_as_html(
-                           missed_votes.get(author, []))))
-            for sentiment in conf.SENTIMENTS:
-                count = len(sentiments.get(author, {}).get(
-                    sentiment, []))
-                if count > 0:
-                    f.write('<li>%s: %d' % (sentiment, count ))
-                    if sentiment != 'Positive':
-                        f.write('(%s)</li>'
-                                % patch_list_as_html(
-                                    sentiments[author][sentiment]))
-                f.write('</li>')
-            f.write('</ul></ul>')
-        f.write('</ul><p>What is this report? Why is it so wrong? This report is a quick hack done by Michael Still to visualize the performance of CI systems voting on OpenStack changes. For help, please email him at mikal@stillhq.com. This report was generated at %s.</p>' % datetime.datetime.now())
+        f.write(report)
 
 
 if __name__ == '__main__':
-    report('openstack/nova', None, 'nova')
-    report('openstack/neutron', None, 'neutron')
+    
+    if len(sys.argv) > 1:        
+        fname = sys.argv[1]
+    else:
+        fname = 'patchsets.json'
+        
+    css()
+        
+    report('openstack/nova', None, 'nova', fname)
+    report('openstack/neutron', None, 'neutron', fname)
 
     for user in conf.CI_USERS:
-        report('*', [user], user.replace(' ', '_'))
+        report('*', [user], user.replace(' ', '_'), fname)

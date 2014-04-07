@@ -1,0 +1,88 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+        <link rel="stylesheet" href="rcbau.css">
+        
+        <script src="https://code.jquery.com/jquery-2.1.0.js"></script>
+        <script src="https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+        <script src="http://code.highcharts.com/highcharts.js"></script>
+        <style>
+        </style>
+        
+        <script>
+            $(function() {
+                $( "#accordion" ).accordion();
+                $( "#tabs" ).tabs();
+                
+
+                <span tal:repeat="chart charts" tal:omit-tag="" tal:content="structure chart"></span>
+                <span tal:repeat="chart small_charts" tal:omit-tag="" tal:content="structure chart"></span>
+            });
+        </script>
+    </head>
+    <body>
+        <h2>Valid patches in the last seven days: ${total_patches}</h2>
+        <div>
+            <div tal:repeat="author authors" tal:omit-tag>
+            </div>
+            <div class="clear_float"></div>
+        </div>
+        <div id="tabs">
+            <ul>
+                <li tal:repeat="author authors">
+                    <a tal:attributes="href '#tabs-'+str(repeat.author.number)" >
+                        <div>
+                            <div class="small_graph"
+                                 id="${author.name.replace(' ','-')}-small-graph" 
+                            >
+                            </div>
+                        </div>
+                        <div>${author.name}</div>
+                    </a>
+                </li>
+            </ul>
+            <div tal:repeat="author authors" tal:attributes="id 'tabs-'+str(repeat.author.number)">
+                <div tal:condition="not author.name in total_votes" tal:omit-tag="" tal:omit-tag="">
+                    <h3 class="nonvoting">No votes recorded for ${author.name}</h3>
+                    <div></div>
+                </div>
+                
+                <div tal:condition="author.name in total_votes" tal:omit-tag="">
+                    <h3 tal:attributes="class python:'failing' if author.percentage < 95.0 else 'passing'">
+                        ${author.name} voted on ${author.total} patchsets
+                            (${author.percentage}%) 
+                        passing ${author.passed} (${author.pass_percentage}%), 
+                        failing ${author.failed} (${author.fail_percentage}%) and 
+                        unparsed ${author.unparsed} (${author.unparsed_percentage}%)
+                    </h3>
+                    <div>
+                        <div class="patchsets_list">
+                            <div><h4>Missed ${len(author.missed_votes)}:</h4> 
+                                <span tal:repeat="missed author.missed_votes" tal:omit-tag="">
+                                    <a tal:attributes="href string:http://review.openstack.org/#/c/${missed.number}/${missed.patch}">${missed.number},${missed.patch}</a>
+                                </span>
+                            </div>
+                            <div tal:repeat="sentiment sentiments">
+                                <div tal:condition="sentiment in author.sentiments">
+                                    <h4>${sentiment}: ${len(author.sentiments[sentiment])}</h4>
+                                    <div tal:condition="sentiment != 'Positive'">
+                                        <span tal:repeat="patch author.sentiments[sentiment]" tal:omit-tag="">
+                                            <a tal:attributes="href string:http://review.openstack.org/#/c/${patch.number}/${patch.patch}">${patch.number},${patch.patch}</a> 
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="${author.name.replace(' ','-')}-graph" class="graph"></div>
+                        <div class="clear_float"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p>
+            What is this report? Why is it so wrong? 
+            This report is a quick hack done by Michael Still to visualize the performance of CI systems voting on OpenStack changes. 
+            For help, please email him at mikal@stillhq.com. This report was generated at ${now}.
+        </p>
+    </body>
+</html>
