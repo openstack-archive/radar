@@ -6,7 +6,7 @@ import sys
 import urllib
 
 import conf
-import utilities
+import utility
 
 
 if __name__ == '__main__':
@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     while day < datetime.datetime.now():
         print 'Processing %s/%s/%s' % (day.year, day.month, day.day)
-        for line in utilities.read_remote_lines(
+        for line in utility.read_remote_lines(
               'http://www.rcbops.com/gerrit/merged/%s/%s/%s'
               % (day.year, day.month, day.day)):
             try:

@@ -8,6 +8,7 @@ import time
 
 import feedutils
 import sql
+import utility
 
 
 def reviews():
@@ -18,9 +19,9 @@ def reviews():
 
     while day < datetime.datetime.now():
         print 'Processing %s/%s/%s' % (day.year, day.month, day.day)
-        data = utilities.read_remote_file(
+        data = utility.read_remote_file(
               'http://www.rcbops.com/gerrit/merged/%s/%s/%s_reviews.json'
-              % (day.year, day.month, day.day)):
+              % (day.year, day.month, day.day))
         j = json.loads(data)
 
         for username in j:
