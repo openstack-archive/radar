@@ -115,15 +115,28 @@ for filename in changed_merge_files:
                 if not 'change' in j:
                     continue
 
+                if not 'patchSet' in j:
+                    continue
+
                 number = j['change']['number']
                 patchset = j['patchSet']['number']
                 project = j['change']['project']
 
                 patch_key = 'patches/%s/%s' % (project, number)
-                patches.setdefault(patch_key, {})
-                patches[patch_key].setdefault(patchset, [])
+                if os.path.exists('%s/%s.json' % (patch_key, number)):
+                    with open('%s/%s.json' % (patch_key, patchset)) as f:
+                        patches.setdefault(patch_key, {})
+                        patches[patch_key][patchset] = json.loads(f.read())
+                else:
+                    patches.setdefault(patch_key, {})
+                    patches[patch_key].setdefault(patchset, {})
+                patches[patch_key][patchset].setdefault('reviews', [])
 
-                if j['type'] == 'comment-added':
+                if j['type'] == 'patchset-created':
+                    patches[patch_key][patchset]['created'] = \
+                        j['patchSet']['createdOn']
+
+                elif j['type'] == 'comment-added':
                     author = j['author'].get('username', None)
                     if not author:
                         author = j['author'].get('email', None)
@@ -146,8 +159,9 @@ for filename in changed_merge_files:
 
                         desc = '%s:%s:%s' % (author, approval['type'],
                                              approval['value'])
-                        if not desc in patches[patch_key][patchset]:
-                            patches[patch_key][patchset].append(desc)
+                        if not desc in patches[patch_key][patchset]['reviews']:
+                            patches[patch_key][patchset]['reviews'].append(
+                                desc)
 
             except Exception, e:
                 print 'Error: %s\n' % e
