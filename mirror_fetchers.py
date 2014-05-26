@@ -122,7 +122,8 @@ for filename in changed_merge_files:
                 patchset = j['patchSet']['number']
                 project = j['change']['project']
 
-                patch_key = 'patches/%s/%s' % (project, number)
+                patch_key = 'patches/%s/%s/%s' % (project, number[:2],
+                                                  number[2:])
                 if os.path.exists('%s/%s.json' % (patch_key, number)):
                     with open('%s/%s.json' % (patch_key, patchset)) as f:
                         patches.setdefault(patch_key, {})
