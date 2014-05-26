@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import copy
 import datetime
 import json
 import os
@@ -85,17 +86,21 @@ while day < datetime.datetime.now():
 
     day += one_day
 
-#for dirpath, subdirs, files in os.walk('merged'):
-#    for filename in files:
-#        if filename.endswith('.json'):
-#            continue
-#        changed_merge_files[os.path.join(dirpath, filename)] = True
+# Reprocess the world?
+if False:
+    for dirpath, subdirs, files in os.walk('merged'):
+        for filename in files:
+            if filename.endswith('.json'):
+                continue
+            changed_merge_files[os.path.join(dirpath, filename)] = True
 
 print 'Processing changed merge files'
 for filename in changed_merge_files:
     print '... %s' % filename
     with open(filename, 'r') as f:
         reviews = {}
+        reviews_verbose = {}
+
         for line in f.readlines():
             line = line.rstrip()
 
@@ -120,12 +125,18 @@ for filename in changed_merge_files:
                     project = j['change']['project']
 
                     for approval in j.get('approvals', []):
+                        data = {'number': number,
+                                'patchset': patchset,
+                                'project': project,
+                                'type': approval['type'],
+                                'value': approval['value'],
+                                'id': j['change']['id']}
                         reviews.setdefault(author, [])
-                        reviews[author].append({'number': number,
-                                                'patchset': patchset,
-                                                'project': project,
-                                                'type': approval['type'],
-                                                'value': approval['value']})
+                        reviews[author].append(copy.copy(data))
+
+                        data['comment'] = j['comment']
+                        reviews_verbose.setdefault(author, [])
+                        reviews_verbose[author].append(copy.copy(data))
 
             except Exception, e:
                 print 'Error: %s\n' % e
@@ -134,5 +145,7 @@ for filename in changed_merge_files:
 
     with open('%s_reviews.json' % filename, 'w') as f:
         f.write(json.dumps(reviews, indent=4))
+    with open('%s_reviews_verbose.json' % filename, 'w') as f:
+        f.write(json.dumps(reviews_verbose, indent=4))
 
 print 'Done'
