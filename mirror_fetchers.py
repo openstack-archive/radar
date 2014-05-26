@@ -95,6 +95,8 @@ if False:
             changed_merge_files[os.path.join(dirpath, filename)] = True
 
 print 'Processing changed merge files'
+patches = {}
+
 for filename in changed_merge_files:
     print '... %s' % filename
     with open(filename, 'r') as f:
@@ -113,16 +115,20 @@ for filename in changed_merge_files:
                 if not 'change' in j:
                     continue
 
+                number = j['change']['number']
+                patchset = j['patchSet']['number']
+                project = j['change']['project']
+
+                patch_key = 'patches/%s/%s' % (project, number)
+                patches.setdefault(patch_key, {})
+                patches[patch_key].setdefault(patchset, [])
+
                 if j['type'] == 'comment-added':
                     author = j['author'].get('username', None)
                     if not author:
                         author = j['author'].get('email', None)
                     if not author:
                         continue
-
-                    number = j['change']['number']
-                    patchset = j['patchSet']['number']
-                    project = j['change']['project']
 
                     for approval in j.get('approvals', []):
                         data = {'number': number,
@@ -138,6 +144,11 @@ for filename in changed_merge_files:
                         reviews_verbose.setdefault(author, [])
                         reviews_verbose[author].append(copy.copy(data))
 
+                        desc = '%s:%s:%s' % (author, approval['type'],
+                                             approval['value'])
+                        if not desc in patches[patch_key][patchset]:
+                            patches[patch_key][patchset].append(desc)
+
             except Exception, e:
                 print 'Error: %s\n' % e
                 print json.dumps(j, indent=4)
@@ -147,5 +158,12 @@ for filename in changed_merge_files:
         f.write(json.dumps(reviews, indent=4))
     with open('%s_reviews_verbose.json' % filename, 'w') as f:
         f.write(json.dumps(reviews_verbose, indent=4))
+
+for patch_key in patches:
+    if not os.path.exists(patch_key):
+        os.makedirs(patch_key)
+    for patchset in patches[patch_key]:
+        with open('%s/%s.json' % (patch_key, patchset), 'w') as f:
+            f.write(json.dumps(patches[patch_key][patchset], indent=4))
 
 print 'Done'
