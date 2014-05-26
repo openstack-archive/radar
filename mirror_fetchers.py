@@ -99,7 +99,6 @@ if True:
                                        int(m.group(3)))
                 age = datetime.datetime.now() - dt
                 if age.days < 90:
-                    print 'Will reprocess %s' % filename
                     changed_merge_files[os.path.join(dirpath, filename)] = True
 
 print 'Processing changed merge files'
