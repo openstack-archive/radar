@@ -143,8 +143,7 @@ for filename in ninety_days_of_filenames():
                 patchset = j['patchSet']['number']
                 project = j['change']['project']
 
-                patch_key = 'patches/%s/%s/%s' % (project, number[:2],
-                                                  number[2:])
+                patch_key = 'patches/%s/%s/%s' % (project, number[:2], number)
                 if os.path.exists('%s/%s.json' % (patch_key, number)):
                     with open('%s/%s.json' % (patch_key, patchset)) as f:
                         patches.setdefault(patch_key, {})
