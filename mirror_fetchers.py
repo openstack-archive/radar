@@ -89,7 +89,7 @@ while day < datetime.datetime.now():
 
 # Reprocess the last 90 days?
 FILENAME_RE = re.compile('^merged/([0-9]+)/([0-9]+)/([0-9]+)$')
-if True:
+if False:
     for dirpath, subdirs, files in os.walk('merged'):
         for filename in files:
             m = FILENAME_RE.match('%s/%s' % (dirpath, filename))
