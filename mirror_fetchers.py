@@ -105,7 +105,21 @@ if True:
 print 'Processing changed merge files'
 patches = {}
 
-for filename in changed_merge_files:
+
+def ninety_days_of_filenames():
+    dt = datetime.datetime.now()
+    dt -= datetime.timedelta(days=90)
+
+    while dt < datetime.datetime.now():
+        yield 'merged/%s/%s/%s' % (dt.year, dt.month, dt.day)
+        dt += datetime.timedelta(days=1)
+    yield 'merged/%s/%s/%s' % (dt.year, dt.month, dt.day)
+
+
+for filename in ninety_days_of_filenames():
+    if not filename in changed_merge_files:
+        continue
+
     print '... %s' % filename
     with open(filename, 'r') as f:
         reviews = {}
