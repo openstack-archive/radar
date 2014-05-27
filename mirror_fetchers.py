@@ -156,6 +156,8 @@ for filename in ninety_days_of_filenames():
                 if j['type'] == 'patchset-created':
                     patches[patch_key][patchset]['created'] = \
                         j['patchSet']['createdOn']
+                    patches[patch_key][patchset]['sha'] = \
+                        j['patchSet']['revision']
 
                 elif j['type'] == 'comment-added':
                     author = j['author'].get('username', None)
