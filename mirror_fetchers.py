@@ -89,7 +89,7 @@ while day < datetime.datetime.now():
 
 # Reprocess the last 90 days?
 FILENAME_RE = re.compile('^merged/([0-9]+)/([0-9]+)/([0-9]+)$')
-if False:
+if True:
     for dirpath, subdirs, files in os.walk('merged'):
         for filename in files:
             m = FILENAME_RE.match('%s/%s' % (dirpath, filename))
@@ -170,7 +170,8 @@ for filename in ninety_days_of_filenames():
                                 'project': project,
                                 'type': approval['type'],
                                 'value': approval['value'],
-                                'id': j['change']['id']}
+                                'id': j['change']['id'],
+                                'sha': j['patchSet']['revision']}
                         reviews.setdefault(author, [])
                         reviews[author].append(copy.copy(data))
 
