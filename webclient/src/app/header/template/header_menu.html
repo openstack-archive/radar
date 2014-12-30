@@ -1,0 +1,97 @@
+<div ng-controller="HeaderController">
+    <nav class="navbar navbar-inverse navbar-fixed-top" 
+         role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand navbar-header" href="#">
+                    Radar
+                </a>
+            </div>
+        <div id="navbar" class="navbar-collapse collapse">
+        	<ul class="nav navbar-nav navbar-right">
+            	<li ng-hide="isLoggedIn">
+                	<a href="#!/auth/authorize">
+                    	Login
+                    	<span class="glyphicon glyphicon-log-in" 
+                    	      aria-hidden="true"></span>
+                	</a>
+            	</li>
+            	<li class="dropdown" ng-show="isLoggedIn" dropdown>
+                	<a href="#" class="dropdown-toggle" 
+                	            data-toggle="dropdown" 
+                	            dropdown-toggle>
+                		<span ng-show="currentUser.$resolved">
+                        	{{currentUser.full_name}}
+                        <span class="caret dropdown" aria-hidden="true"></span>
+                		</span>
+                    	<em class="text-muted" ng-hide="currentUser.$resolved">
+                    	    Loading...
+                    	</em>
+                	</a>
+                	<ul class="dropdown-menu" role="menu">
+                		<li>
+                		      <a href="#!/profile/preferences">
+                		          <i class="fa fa-cog"></i>
+                		          Preferences
+                		      </a>
+                		</li>
+                		<li class="divider"></li>
+                		<li>
+                		    <a href="#!/auth/deauthorize">
+                		        <span class="glyphicon glyphicon-log-out" 
+                		          aria-hidden="true"></span>
+                		    Logout
+                		    </a></li>
+                	</ul>
+            	</li>
+        	</ul>
+          <form class="navbar-form navbar-right">
+              <div class="form-group has-feedback">
+                  <input type="text" 
+                         class="form-control" 
+                         placeholder="Search..."
+                         ng-model="searchString"
+                         typeahead-wait-ms="200"
+                         typeahead-append-to-body="true"
+                         typeahead-editable="false"
+                         typeahead="criteria as criteria.title for criteria in quickSearch($viewValue)"
+                         typeahead-loading="headerCriteriaLoading"
+                         typeahead-on-select="search($model)"
+                         typeahead-template-url="app/search/template/typeahead_criteria_item.html"
+                   />
+                  <span class="form-control-feedback text-muted">
+                      <i class="fa fa-search" 
+                         ng-hide="headerCriteriaLoading">
+                      </i>
+                      <i class="fa fa-spin fa-refresh"
+                         ng-show="headerCriteriaLoading">
+                      </i>
+                  </span>
+              </div>
+          </form>
+        </div>
+      </div>
+    </nav>
+
+<div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-1 sidebar" align="center">
+          <ul class="nav nav-sidebar navbar-fixed-side">
+            <li ng-class="{active:isActive('/dashboard')}">
+                <a href="#!/dashboard">
+                    <i class="fa fa-dashboard fa-3x visible-lg visible-md"></i>
+                    <small class="visible-lg visible-md">Dashboard</small>
+                </a>
+            <li ng-class="{active:isActive('/systems')}">
+                <a href="#!/systems">
+                    <i class="fa fa-desktop fa-3x visible-lg visible-md"></i>
+                    <small class="visible-lg visible-md">Systems</small>
+                </a>
+            </li>
+            <li ng-class="{active:isActive('/operators')}">
+                <a href="#!/operators">
+                    <i class="fa fa-user fa-3x visible-lg visible-md"></i>
+                    <small class="visible-lg visible-md">Operators</small>
+                </a></li>
+          </ul>
+        </div>   

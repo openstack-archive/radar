@@ -1,0 +1,36 @@
+<div ng-controller="SystemDetailController"
+ng-include src="'/inline/system_detail.html'">
+<script type="text/ng-template" id="/inline/system_detail.html">
+    <div class="panel panel-success">
+    <div class="panel-heading">
+        <h2 class="panel-title">
+        <span ng-show="System.name">
+            {{System.name}}
+        </span>
+        <em ng-hide="System.name" class="text-muted">
+            No system name
+        </em>
+    </h2>
+    </div>
+   
+    <div class="panel-body">
+        <p><span ng-show="System.updated_at"
+              class="honor-carriage-return">Last updated at: {{System.updated_at | moment}}
+        </span>
+        <em ng-hide="System.updated_at" class="text-muted">
+            last updated time not available
+        </em></p>
+        </p>
+        <p>
+        <span ng-show="System.created_at"
+              class="honor-carriage-return">Discovered at: {{System.created_at | moment}}
+        </span>
+        <em ng-hide="System.created_at" class="text-muted">
+            System discovery time not available
+        </em></p>
+</div>
+</div>
+
+   
+</script>
+</div>

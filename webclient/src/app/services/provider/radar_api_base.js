@@ -1,0 +1,1 @@
+angular.module('db.services').constant('radarApiBase', '/v1');

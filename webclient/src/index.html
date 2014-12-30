@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html id="ng-app">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Radar Third Party Dashboard</title>
+
+    <!-- Google's Ajax Crawling: https://developers.google.com/webmasters/ajax-crawling -->
+    <meta name="fragment" content="!">
+
+    <!-- Icons -->
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+   
+    <!-- build:js(bower_components) js/libs.js -->
+    <script src="angular/angular.js"></script>
+    <script src="angular-bootstrap/ui-bootstrap-tpls.js"></script>
+    <script src="angular-ui-router/release/angular-ui-router.js"></script>
+    <script src="angular-resource/angular-resource.js"></script>
+    <script src="angular-local-storage/dist/angular-local-storage.js"></script>
+    <script src="angular-sanitize/angular-sanitize.js"></script>
+    <script src="angular-cache/dist/angular-cache.js"></script>
+    <script src="moment/moment.js"></script>
+    <script src="angular-moment/angular-moment.js"></script>
+    <script src="ng-table/ng-table.js"></script>
+    <!-- endbuild -->
+
+    <script src="js/templates.js"></script>
+    <script src="js/dashboard.js"></script>
+    
+</head>
+<body ng-class="{'logged-in' : isLoggedIn, 'submenu': hasSubmenu}">  
+<header ng-include src="'app/header/template/header_menu.html'" ></header> 
+<div ui-view class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main"></div>
+<notifications></notifications>
+</body>
+</body>
+</html>

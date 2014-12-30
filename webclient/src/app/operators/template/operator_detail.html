@@ -1,0 +1,36 @@
+<div ng-controller="OperatorDetailController"
+ng-include src="'/inline/operator_detail.html'">
+<script type="text/ng-template" id="/inline/operator_detail.html">
+    <div class="panel panel-success">
+    <div class="panel-heading">
+        <h2 class="panel-title">
+        <span ng-show="Operator.operator_name">
+            {{Operator.operator_name}}
+        </span>
+        <em ng-hide="Operator.operator_name" class="text-muted">
+            No operator name
+        </em>
+    </h2>
+    </div>
+   
+    <div class="panel-body">
+        <p><span ng-show="Operator.updated_at"
+              class="honor-carriage-return">Last updated at: {{Operator.updated_at | moment}}
+        </span>
+        <em ng-hide="Operator.updated_at" class="text-muted">
+            last updated time not available
+        </em></p>
+        </p>
+        <p>
+        <span ng-show="Operator.created_at"
+              class="honor-carriage-return">Discovered at: {{Operator.created_at | moment}}
+        </span>
+        <em ng-hide="Operator.created_at" class="text-muted">
+            operator discovery time not available
+        </em></p>
+</div>
+</div>
+
+   
+</script>
+</div>

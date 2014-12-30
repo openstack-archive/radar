@@ -1,0 +1,18 @@
+<a ng-switch="match.model.type"
+   class="header-criteria-item">
+    <span ng-switch-when="Text">
+        <i class="fa fa-search text-muted"></i>&emsp;{{match.model.title}}
+    </span>
+    <span ng-switch-when="System">
+        <i class="fa fa-desktop text-muted"></i>&emsp;{{match.model.title}}
+   </span>
+       <span ng-switch-when="Operator">
+        <i class="fa fa-user text-muted"></i>&emsp;{{match.model.title}}
+   </span>
+    <span ng-switch-when="User">
+        <i class="fa fa-sb-user text-muted"></i>&emsp;{{match.model.title}}
+    </span>
+    <span ng-switch-default>
+        <i class="fa fa-question text-muted"></i>&emsp;{{match.model.type}}
+    </span>
+</a>

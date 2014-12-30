@@ -1,0 +1,46 @@
+<h2 class="sub-header">Third-Party CI Operators</h2>
+
+        <table ng-table="tableParams" class="table ng-table-responsive  
+                                             table-striped table-hover 
+                                             bootstrap-table"
+                               template-pagination="custom/pager">
+            <tr ng-repeat="operator in $data">
+           
+                <td data-title="'User Name'">
+                 <subscribe resource="operator"
+                   resource-id="operator.id"></subscribe>
+                  <strong>
+                       <a href="#!/operators/{{operator.id}}">
+                          {{operator.operator_name}}
+                       </a>
+                  </strong>  
+                </td>
+                <td data-title="'Created'">
+                    {{operator.created_at | moment}}
+                </td>
+                 <td data-title="'Updated'">
+                    {{operator.updated_at | moment}}
+                </td>
+            </tr>
+        </table>
+        <script type="text/ng-template" id="custom/pager">
+        <div class="ng-cloak ng-table-pager">
+    <div ng-if="params.settings().counts.length" class="ng-table-counts btn-group pull-right">
+        <button ng-repeat="count in params.settings().counts" type="button"
+                ng-class="{'active':params.count() == count}"
+                ng-click="params.count(count)" class="btn btn-default">
+            <span ng-bind="count"></span>
+        </button>
+    </div>
+    <ul class=" pager ng-cloak">
+        <li ng-class="{'disabled': !page.active}" ng-repeat="page in pages" ng-switch="page.type">
+            <a ng-switch-when="prev" ng-click="params.page(page.number)" href="">&laquo;</a>
+            <a ng-switch-when="first" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a>
+            <a ng-switch-when="page" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a>
+            <a ng-switch-when="more" ng-click="params.page(page.number)" href="">&#8230;</a>
+            <a ng-switch-when="last" ng-click="params.page(page.number)" href=""><span ng-bind="page.number"></span></a>
+            <a ng-switch-when="next" ng-click="params.page(page.number)" href="">&raquo;</a>
+        </li>
+    </ul>
+</div>
+</script>
