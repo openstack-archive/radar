@@ -78,19 +78,6 @@ module.exports = function(grunt) {
                   }
                   ]
           },
-          publish: {
-        	  files: [
-                      {
-                          expand: true,
-                          dot: true,
-                          cwd: dir.build,
-                          dest: dir.publish,
-                          src: [
-                              '**/*.*'
-                          ]
-                      }
-                      ]
-          }
       },
       html2js: {
           options: {
@@ -193,7 +180,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-connect-proxy');
   grunt.loadNpmTasks('grunt-open');
   grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.registerTask('default', ['html2js','cssmin','useminPrepare','concat','copy','usemin','copy:publish','serve']);
+  grunt.registerTask('build', ['html2js','cssmin','useminPrepare','concat','copy','usemin']);
+  grunt.registerTask('default', ['html2js','cssmin','useminPrepare','concat','copy','usemin','serve']);
   grunt.registerTask('publish', ['copy']);
   grunt.registerTask('serve', function (target) {
 	    grunt.task.run([

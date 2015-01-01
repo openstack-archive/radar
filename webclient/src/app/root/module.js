@@ -2,7 +2,7 @@ angular.module('db.root',
     ['db.services', 'db.templates', 'db.header', 'db.home', 'db.dashboard', 
      'db.pages', 'db.auth', 'db.systems', 'db.operators', 'db.profile', 'db.notification', 
      'db.search', 'ui.router', 'ui.bootstrap', 'angular-data.DSCacheFactory',
-     'angularMoment'])
+     'angularMoment', 'angulartics', 'angulartics.google.analytics'])
       
     .config(function ($urlRouterProvider, $locationProvider,
                       $httpProvider) {
