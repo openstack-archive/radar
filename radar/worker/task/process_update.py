@@ -145,7 +145,7 @@ class ProcessCISystems():
                                         print "operator %s was updated successfully" % theoperator['operator_name']
 
     def _request_json(self, path, params, headers=None, method="post",
-                      status=None, path_prefix="http://10.211.55.29:8080/v1"):
+                      status=None, path_prefix="http://localhost/v1"):
 
         merged_headers = self.default_headers.copy()
         if headers:

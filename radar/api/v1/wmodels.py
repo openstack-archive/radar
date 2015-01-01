@@ -1,6 +1,6 @@
 from datetime import datetime
 from wsme import types as wtypes
-from api.v1 import base
+from radar.api.v1 import base
 
 class System(base.APIBase):
     """Represents the ci systems for the dashboard
@@ -33,7 +33,6 @@ class User(base.APIBase):
     email = wtypes.text
     """Email Address."""
 
-    # Todo(nkonovalov): use teams to define superusers
     is_superuser = bool
 
     last_login = datetime
