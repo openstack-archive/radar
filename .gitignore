@@ -1,0 +1,6 @@
+*.log
+*.pyc
+radar.egg-info/
+node_modules/
+build/
+bower_components/

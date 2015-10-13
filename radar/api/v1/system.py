@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oslo.config import cfg
+from oslo_config import cfg
 from pecan import expose
-from pecan import request
 from pecan import response
 from pecan import rest
 from pecan.secure import secure
@@ -180,7 +179,7 @@ class SystemsController(rest.RestController):
     
     @secure(checks.guest)
     @wsme_pecan.wsexpose(long, unicode)
-    def count(self, args):        
+    def count(self, kwargs):
         systems = systems_api.count()
         
         if systems:

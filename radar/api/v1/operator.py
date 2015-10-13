@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oslo.config import cfg
+from oslo_config import cfg
 from pecan import expose
-from pecan import request
 from pecan import response
 from pecan import rest
 from pecan.secure import secure
@@ -26,7 +25,6 @@ from radar.api.auth import authorization_checks as checks
 from radar.api.v1.search import search_engine
 from radar.api.v1 import wmodels
 from radar.db.api import operators as operators_api
-from radar.db.api import systems
 
 
 CONF = cfg.CONF
@@ -177,7 +175,7 @@ class OperatorsController(rest.RestController):
         return [wmodels.Operator.from_db_model(operator) for operator in operators]
     
     @wsme_pecan.wsexpose(long, unicode)
-    def count(self, args):        
+    def count(self, kwargs):
         operators = operators_api.count()
         
         if operators:
