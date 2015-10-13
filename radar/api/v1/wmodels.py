@@ -2,6 +2,7 @@ from datetime import datetime
 from wsme import types as wtypes
 from radar.api.v1 import base
 
+
 class System(base.APIBase):
     """Represents the ci systems for the dashboard
     """
@@ -9,13 +10,24 @@ class System(base.APIBase):
     name = wtypes.text
     """The system name"""
 
+
 class SystemEvent(base.APIBase):
     event_type = wtypes.text
     event_info = wtypes.text
 
+
 class Operator(base.APIBase):
     operator_name = wtypes.text
     operator_email = wtypes.text
+
+
+class Change(base.APIBase):
+    change_id = wtypes.text
+    project = wtypes.text
+    subject = wtypes.text
+    topic = wtypes.text
+    status = wtypes.text
+
 
 class User(base.APIBase):
     """Represents a user."""
