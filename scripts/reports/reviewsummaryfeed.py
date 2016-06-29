@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     initial_size = 30
 
-    if form.has_key('reviewers'):
+    if 'reviewers' in form:
         showusers = feedutils.ResolveGroupMembers(cursor,
                                                   form['reviewers'].value,
                                                   'reviewsummary',
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     else:
         showusers = ['mikalstill']
 
-    if form.has_key('project'):
+    if 'project' in form:
         project = form['project'].value
     else:
         project = '__total__'
