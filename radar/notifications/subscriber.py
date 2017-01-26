@@ -120,7 +120,7 @@ class Subscriber(ConnectionService):
         if self._closing:
             return None, None, None
 
-        # Sanity check two, are we open, or reconnecting?
+        # Sanity checks two, are we open, or reconnecting?
         if not self._open:
             return None, None, None
 

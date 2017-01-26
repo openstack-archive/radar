@@ -51,7 +51,7 @@ class Publisher(ConnectionService):
         publisher was connecting.
         """
 
-        # Shallow copy, so we can iterate over it without having it be modified
+        # Shallow copy, so we can iterate over it without having it is modified
         # out of band.
         pending = list(self._pending)
 
@@ -92,7 +92,7 @@ class Publisher(ConnectionService):
             self._reconnect()
             return
 
-        # Try to send a message. If we fail, schedule a reconnect and store
+        # Try to send a message. If we fail, schedule a reconnecting and storing
         # the message.
         try:
             self._channel.basic_publish(self._exchange_name,
