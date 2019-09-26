@@ -1,1 +1,0 @@
-angular.module('db.services', ['ngResource', 'db.notification']);
